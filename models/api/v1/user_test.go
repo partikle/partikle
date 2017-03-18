@@ -50,7 +50,31 @@ var _ = Describe("User", func() {
 			})
 		})
 	})
-	Context("database operations", func() {
+	Describe("VerifyPassword", func() {
+		var password string
+		Context("password is correct", func(){
+			BeforeEach(func() {
+				password = "testpassword"
+			})
+			It("returns true", func() {
+				valid, err := user.VerifyPassword(password)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(valid).To(BeTrue())
+			})
+		})
+		Context("password is incorrect", func(){
+			BeforeEach(func() {
+				password = "badpassword"
+			})
+			It("returns false", func(){
+				valid, err := user.VerifyPassword(password)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(valid).To(BeFalse())
+
+			})
+		})
+	})
+	Describe("database operations", func() {
 		var (
 			id  int64
 			err error
@@ -94,7 +118,7 @@ var _ = Describe("User", func() {
 				})
 			})
 		})
-		FDescribe("GetAllUser", func() {
+		Describe("GetAllUser", func() {
 			var (
 				query  map[string]string
 				fields []string

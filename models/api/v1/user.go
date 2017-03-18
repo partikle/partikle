@@ -22,6 +22,14 @@ type User struct {
 	Created      time.Time `orm:"type(datetime)"`
 }
 
+func (user *User) VerifyPassword(password string) (bool, error) {
+	passHash, err := generatePassHash(password, user.PasswordSalt)
+	if err != nil {
+		return false, wrapErr.New("generating password hash", err)
+	}
+	return passHash == user.PasswordHash, nil
+}
+
 const pwHashBytes = 64
 
 func generateSalt() (string, error) {
