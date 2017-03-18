@@ -22,35 +22,6 @@ type User struct {
 	Created      time.Time `orm:"type(datetime)"`
 }
 
-// VerifyPassword verifies whether the given password matches that of the user
-func (user *User) VerifyPassword(password string) (bool, error) {
-	passHash, err := generatePassHash(password, user.PasswordSalt)
-	if err != nil {
-		return false, wrapErr.New("generating password hash", err)
-	}
-	return passHash == user.PasswordHash, nil
-}
-
-const pwHashBytes = 64
-
-func generateSalt() (string, error) {
-	buf := make([]byte, pwHashBytes)
-	if _, err := io.ReadFull(rand.Reader, buf); err != nil {
-		return "", wrapErr.New("reading random bytes into buf", err)
-	}
-
-	return fmt.Sprintf("%x", buf), nil
-}
-
-func generatePassHash(password string, salt string) (string, error) {
-	h, err := scrypt.Key([]byte(password), []byte(salt), 16384, 8, 1, pwHashBytes)
-	if err != nil {
-		return "", wrapErr.New("generating cryptographic key using salt", err)
-	}
-
-	return fmt.Sprintf("%x", h), nil
-}
-
 // NewUser returns a *User object with hashed password and salt
 func NewUser(username, password string) (*User, error) {
 	if len(username) < 8 {
@@ -73,6 +44,15 @@ func NewUser(username, password string) (*User, error) {
 		PasswordSalt: salt,
 		Created:      time.Now(),
 	}, nil
+}
+
+// VerifyPassword verifies whether the given password matches that of the user
+func (user *User) VerifyPassword(password string) (bool, error) {
+	passHash, err := generatePassHash(password, user.PasswordSalt)
+	if err != nil {
+		return false, wrapErr.New("generating password hash", err)
+	}
+	return passHash == user.PasswordHash, nil
 }
 
 func init() {
@@ -200,4 +180,24 @@ func DeleteUser(id int64) (err error) {
 		}
 	}
 	return
+}
+
+const pwHashBytes = 64
+
+func generateSalt() (string, error) {
+	buf := make([]byte, pwHashBytes)
+	if _, err := io.ReadFull(rand.Reader, buf); err != nil {
+		return "", wrapErr.New("reading random bytes into buf", err)
+	}
+
+	return fmt.Sprintf("%x", buf), nil
+}
+
+func generatePassHash(password string, salt string) (string, error) {
+	h, err := scrypt.Key([]byte(password), []byte(salt), 16384, 8, 1, pwHashBytes)
+	if err != nil {
+		return "", wrapErr.New("generating cryptographic key using salt", err)
+	}
+
+	return fmt.Sprintf("%x", h), nil
 }
