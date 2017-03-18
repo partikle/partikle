@@ -44,6 +44,12 @@ func generatePassHash(password string, salt string) (string, error) {
 
 // NewUser returns a *User object with hashed password and salt
 func NewUser(username, password string) (*User, error) {
+	if len(username) < 8 {
+		return nil, wrapErr.New("invalid username: must be at least 8 characters", nil)
+	}
+	if len(password) < 8 {
+		return nil, wrapErr.New("invalid password: must be at least 8 characters", nil)
+	}
 	salt, err := generateSalt()
 	if err != nil {
 		return nil, wrapErr.New("generating salt", err)
