@@ -22,6 +22,7 @@ type User struct {
 	Created      time.Time `orm:"type(datetime)"`
 }
 
+// VerifyPassword verifies whether the given password matches that of the user
 func (user *User) VerifyPassword(password string) (bool, error) {
 	passHash, err := generatePassHash(password, user.PasswordSalt)
 	if err != nil {

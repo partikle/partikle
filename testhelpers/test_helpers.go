@@ -25,7 +25,7 @@ func DestroyTestDB() error {
 }
 
 func RefreshDBState() error {
-	if err := orm.RunSyncdb("default", true, true); err != nil {
+	if err := orm.RunSyncdb("default", true, false); err != nil {
 		return errors.New("syncing db", err)
 	}
 	return nil
