@@ -50,7 +50,7 @@ var _ = Describe("User", func() {
 			})
 		})
 	})
-	Describe("AddUser", func() {
+	Context("database operations", func() {
 		var (
 			id  int64
 			err error
@@ -58,19 +58,40 @@ var _ = Describe("User", func() {
 		BeforeEach(func() {
 			id, err = AddUser(user)
 		})
-		Context("user has not been added yet", func() {
-			It("returns the user id without error", func() {
-				Expect(err).NotTo(HaveOccurred())
-				Expect(id).To(Equal(int64(1)))
+		Describe("AddUser", func() {
+			Context("user has not been added yet", func() {
+				It("returns the user id without error", func() {
+					Expect(err).NotTo(HaveOccurred())
+					Expect(id).To(Equal(int64(1)))
+				})
+			})
+			Context("a user with the same username has already been added", func() {
+				It("returns an error", func() {
+					Expect(err).NotTo(HaveOccurred())
+					Expect(id).To(Equal(int64(1)))
+					_, err = AddUser(user)
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring("UNIQUE constraint failed"))
+				})
 			})
 		})
-		Context("a user with the same username has already been added", func() {
-			It("returns an error", func() {
-				Expect(err).NotTo(HaveOccurred())
-				Expect(id).To(Equal(int64(1)))
-				_, err = AddUser(user)
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("UNIQUE constraint failed"))
+		Describe("GetUserByID", func() {
+			Context("user exists", func() {
+				It("returns the *User object matching the id", func() {
+					getUser, err := GetUserByID(id)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(getUser.Username).To(Equal(user.Username))
+					Expect(getUser.Created.Unix()).To(Equal(user.Created.Unix()))
+					Expect(getUser.PasswordHash).To(Equal(user.PasswordHash))
+					Expect(getUser.PasswordSalt).To(Equal(user.PasswordSalt))
+				})
+			})
+			Context("invalid user id", func() {
+				It("returns an error", func() {
+					_, err := GetUserByID(id + 1)
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring("no row found"))
+				})
 			})
 		})
 	})
